@@ -58,7 +58,8 @@ instance Enum PacketType where
 data PacketAttribute =
     UserNameAttribute               { getUserNameAttribute               :: ByteString        }
   | UserPasswordAttribute           { getUserPasswordAttribute           :: ByteString        }
-  | CHAPPassword                    { getCHAPPasswordAttribute           :: ByteString        }
+  | CHAPPassword                    { getCHAPIdentity                    :: Word8,
+                                      getCHAPPasswordAttribute           :: ByteString        }
   | NASIPAddress                    { getNASIPAddress                    :: IPv4              }
   | NASIPv6Address                  { getNASIPv6Address                  :: IPv6              }
   | NASPortAttribute                { getNASPortAttribute                :: Word32            }
@@ -68,8 +69,8 @@ data PacketAttribute =
   | FramedIPNetmaskAttribute        { getFramedIPNetmaskAttribute        :: IPv4              }
   | FramedRoutingAttribute          { getFramedRoutingAttribute          :: FramedRouting     }
   | FramedInterfaceIdAttribute      { getFramedInterfaceIdAttribute      :: Word64            }
-  | FramedIPv6Prefix                { getFramedIPv6Prefix                :: IPv6,
-                                      getFramedIPv6PrefixLength          :: Int8              }
+  | FramedIPv6Prefix                { getFramedIPv6PrefixLength          :: Int8,
+                                      getFramedIPv6Prefix                :: IPv6              }
   | FramedIPv6Route                 { getFramedIPv6RouteAttribute        :: ByteString        }
   | FramedIPv6Pool                  { getFramedIPv6PoolAttribute         :: ByteString        }
   | FilterIdAttribute               { getFilterIdAttribute               :: ByteString        }
