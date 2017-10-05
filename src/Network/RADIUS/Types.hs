@@ -106,6 +106,24 @@ data PacketAttribute =
   | NASPortTypeAttribute            { getNASPortTypeAttribute            :: NASPortType       }
   | PortLimitAttribute              { getPortLimitAttribute              :: Word32            }
   | LoginLATPortAttribute           { getLoginLATPortAttribute           :: ByteString        }
+  | AccountInputGigawordsAttribute  { getAccountInputGigawordsAttribute  :: Word32            }
+  | AccountOutputGigawordsAttribute { getAccountOutputGigawordsAttribute :: Word32            }
+  | EventTimeStampAttribute         { getEventTimeStampAttribute         :: Word32            }
+  | ARAPPasswordAttribute           { getARAPPasswordAttribute           :: ByteString        }
+  | ARAPFeaturesAttribute           { getARAPFeaturesAttribute           :: ByteString        }
+  | ARAPZoneAccessAttribute         { getARAPZoneAccessAttribute         :: ARAPZoneAccess    }
+  | ARAPSecurityAttribute           { getARAPSecurityAttribute           :: Word32            }
+  | ARAPSecurityDataAttribute       { getARAPSecurityDataAttribute       :: ByteString        }
+  | PasswordRetryAttribute          { getPasswordRetryAttribute          :: Word32            }
+  | PromptAttribute                 { getPromptAttribute                 :: Word32            }
+  | ConnectInfoAttribute            { getConnectInfoAttribute            :: ByteString        }
+  | ConfigurationTokenAttribute     { getConfigurationTokenAttribute     :: ByteString        }
+  | EAPMessageAttribute             { getEAPMessageAttribute             :: ByteString        }
+  | MessageAuthenticatorAttribute   { getMessageAuthenticatorAttribute   :: ByteString        }
+  | ARAPChallengeResponseAttribute  { getARAPChallengeResponseAttribute  :: ByteString        }
+  | AcctInterimIntervalAttribute    { getAcctInterimIntervalAttribute    :: Word32            }
+  | NASPortIdAttribute              { getNASPortIdAttribute              :: ByteString        }
+  | FramedPoolAttribute             { getFramedPoolAttribute             :: ByteString        }
   deriving (Show, Eq, Data)
 
 
@@ -216,3 +234,17 @@ data NASPortType = AsyncNASPort
                  | WirelessOtherNASPort
                  | WirelessIEEE80211NASPort
                    deriving (Show, Eq, Enum, Data)
+
+data ARAPZoneAccess = DefaultZoneOnlyARAPAccess
+                    | UseZoneFilterInclusivelyARAPAccess
+                    | UseZoneFilterExclusivelyARAPAccess
+                    deriving (Show, Eq, Data)
+
+instance Enum ARAPZoneAccess where
+    toEnum 1 = DefaultZoneOnlyARAPAccess
+    toEnum 2 = UseZoneFilterInclusivelyARAPAccess
+    toEnum 4 = UseZoneFilterExclusivelyARAPAccess
+    toEnum n = error $ "Invalid RADIUS ARAP Zone Access " ++ show n
+    fromEnum DefaultZoneOnlyARAPAccess = 1
+    fromEnum UseZoneFilterInclusivelyARAPAccess = 2
+    fromEnum UseZoneFilterExclusivelyARAPAccess = 4

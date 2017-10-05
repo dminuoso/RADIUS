@@ -9,8 +9,9 @@ import Data.Binary.Get             (Get, getLazyByteString, getWord8, getWord16b
 import Data.ByteString.Lazy.Char8  (ByteString)
 import Data.IP                     (IPv4, IPv6)
 import Data.Int                    (Int64)
-import Data.Word                   (Word8, Word16)
+import Data.Word                   (Word8, Word16, Word32)
 import Network.RADIUS.Types
+import Debug.Trace
 
 import qualified Data.ByteString.Lazy.Char8 as B
 
@@ -85,6 +86,16 @@ instance Binary PacketAttribute where
     put (FramedAppleTalkZoneAttribute str)      = putAttributeStr  39 str
     put (CHAPChallengeAttribute str)            = putAttributeStr  60 str
     put (LoginLATPortAttribute str)             = putAttributeStr  63 str
+    put (ARAPPasswordAttribute str)             = putAttributeStr  70 str
+    put (ARAPFeaturesAttribute str)             = putAttributeStr  71 str
+    put (ARAPSecurityDataAttribute str)         = putAttributeStr  74 str
+    put (ConnectInfoAttribute str)              = putAttributeStr  77 str
+    put (ConfigurationTokenAttribute str)       = putAttributeStr  78 str
+    put (EAPMessageAttribute str)               = putAttributeStr  79 str
+    put (MessageAuthenticatorAttribute str)     = putAttributeStr  80 str
+    put (ARAPChallengeResponseAttribute str)    = putAttributeStr  84 str
+    put (NASPortIdAttribute str)                = putAttributeStr  87 str
+    put (FramedPoolAttribute str)               = putAttributeStr  88 str
     put (NASPortAttribute value)                = putAttribute      5 value
     put (FramedMTUAttribute value)              = putAttribute     12 value
     put (LoginTCPPortAttribute value)           = putAttribute     16 value
@@ -108,6 +119,14 @@ instance Binary PacketAttribute where
     put (LoginServiceAttribute value)           = putAttribute     15 value
     put (TerminationActionAttribute value)      = putAttribute     29 value
     put (NASPortTypeAttribute value)            = putAttribute     61 value
+    put (AccountInputGigawordsAttribute value)  = putAttribute     52 value
+    put (AccountOutputGigawordsAttribute value) = putAttribute     53 value
+    put (EventTimeStampAttribute value)         = putAttribute     55 value
+    put (ARAPZoneAccessAttribute value)         = putAttribute     72 value
+    put (ARAPSecurityAttribute value)           = putAttribute     73 value
+    put (PasswordRetryAttribute value)          = putAttribute     75 value
+    put (PromptAttribute value)                 = putAttribute     76 value
+    put (AcctInterimIntervalAttribute value)    = putAttribute     85 value
     put (FramedIPv6Prefix prefixLength prefix) = do
       let attr    = encode prefix
           attrLen = 4 + (fromIntegral . B.length $ attr)
@@ -132,6 +151,7 @@ instance Binary PacketAttribute where
 
     get = do
       code <- getWord8
+      traceM $ "decode attr " ++ show code
       getAttribute code
 
 putAttributeStr :: Word8 -> ByteString -> Put
@@ -170,29 +190,47 @@ getAttribute  36 = getAttributeStr >>= return . LoginLATGroupAttribute
 getAttribute  39 = getAttributeStr >>= return . FramedAppleTalkZoneAttribute
 getAttribute  60 = getAttributeStr >>= return . CHAPChallengeAttribute
 getAttribute  63 = getAttributeStr >>= return . LoginLATPortAttribute
-getAttribute 5  = getAttributeValue >>= return .  NASPortAttribute
-getAttribute 12 = getAttributeValue >>= return .  FramedMTUAttribute
-getAttribute 16 = getAttributeValue >>= return .  LoginTCPPortAttribute
-getAttribute 23 = getAttributeValue >>= return .  FramedIPXNetworkAttribute
-getAttribute 27 = getAttributeValue >>= return .  SessionTimeoutAttribute
-getAttribute 28 = getAttributeValue >>= return .  IdleTimeoutAttribute
-getAttribute 37 = getAttributeValue >>= return .  FramedAppleTalkLinkAttribute
-getAttribute 38 = getAttributeValue >>= return .  FramedAppleTalkNetworkAttribute
-getAttribute 62 = getAttributeValue >>= return .  PortLimitAttribute
-getAttribute 4  = getAttributeValue >>= return .  NASIPAddress
-getAttribute 95 = getAttributeValue >>= return .  NASIPv6Address
-getAttribute 6  = getAttributeValue >>= return .  ServiceTypeAttribute
-getAttribute 7  = getAttributeValue >>= return .  FramedProtocolAttribute
-getAttribute 8  = getAttributeValue >>= return .  FramedIPAddressAttribute
-getAttribute 9  = getAttributeValue >>= return .  FramedIPNetmaskAttribute
-getAttribute 10 = getAttributeValue >>= return .  FramedRoutingAttribute
-getAttribute 13 = getAttributeValue >>= return .  FramedCompressionAttribute
-getAttribute 96 = getAttributeValue >>= return .  FramedInterfaceIdAttribute
-getAttribute 14 = getAttributeValue >>= return .  LoginIPHostAttribute
-getAttribute 98 = getAttributeValue >>= return .  LoginIPv6HostAttribute
-getAttribute 15 = getAttributeValue >>= return .  LoginServiceAttribute
-getAttribute 29 = getAttributeValue >>= return .  TerminationActionAttribute
-getAttribute 61 = getAttributeValue >>= return .  NASPortTypeAttribute
+getAttribute  70 = getAttributeStr >>= return . ARAPPasswordAttribute
+getAttribute  71 = getAttributeStr >>= return . ARAPFeaturesAttribute
+getAttribute  74 = getAttributeStr >>= return . ARAPSecurityDataAttribute
+getAttribute  77 = getAttributeStr >>= return . ConnectInfoAttribute
+getAttribute  78 = getAttributeStr >>= return . ConfigurationTokenAttribute
+getAttribute  79 = getAttributeStr >>= return . EAPMessageAttribute
+getAttribute  80 = getAttributeStr >>= return . MessageAuthenticatorAttribute
+getAttribute  84 = getAttributeStr >>= return . ARAPChallengeResponseAttribute
+getAttribute  87 = getAttributeStr >>= return . NASPortIdAttribute
+getAttribute  88 = getAttributeStr >>= return . FramedPoolAttribute
+getAttribute 5  = getAttributeValue >>= return . NASPortAttribute
+getAttribute 12 = getAttributeValue >>= return . FramedMTUAttribute
+getAttribute 16 = getAttributeValue >>= return . LoginTCPPortAttribute
+getAttribute 23 = getAttributeValue >>= return . FramedIPXNetworkAttribute
+getAttribute 27 = getAttributeValue >>= return . SessionTimeoutAttribute
+getAttribute 28 = getAttributeValue >>= return . IdleTimeoutAttribute
+getAttribute 37 = getAttributeValue >>= return . FramedAppleTalkLinkAttribute
+getAttribute 38 = getAttributeValue >>= return . FramedAppleTalkNetworkAttribute
+getAttribute 62 = getAttributeValue >>= return . PortLimitAttribute
+getAttribute 4  = getAttributeValue >>= return . NASIPAddress
+getAttribute 95 = getAttributeValue >>= return . NASIPv6Address
+getAttribute 6  = getAttributeValue >>= return . ServiceTypeAttribute . fromEnum32
+getAttribute 7  = getAttributeValue >>= return . FramedProtocolAttribute . fromEnum32
+getAttribute 8  = getAttributeValue >>= return . FramedIPAddressAttribute
+getAttribute 9  = getAttributeValue >>= return . FramedIPNetmaskAttribute
+getAttribute 10 = getAttributeValue >>= return . FramedRoutingAttribute . fromEnum32
+getAttribute 13 = getAttributeValue >>= return . FramedCompressionAttribute . fromEnum32
+getAttribute 96 = getAttributeValue >>= return . FramedInterfaceIdAttribute
+getAttribute 14 = getAttributeValue >>= return . LoginIPHostAttribute
+getAttribute 98 = getAttributeValue >>= return . LoginIPv6HostAttribute
+getAttribute 15 = getAttributeValue >>= return . LoginServiceAttribute . fromEnum32
+getAttribute 29 = getAttributeValue >>= return . TerminationActionAttribute . fromEnum32
+getAttribute 61 = getAttributeValue >>= return . NASPortTypeAttribute . fromEnum32
+getAttribute 52 = getAttributeValue >>= return . AccountInputGigawordsAttribute
+getAttribute 53 = getAttributeValue >>= return . AccountOutputGigawordsAttribute
+getAttribute 55 = getAttributeValue >>= return . EventTimeStampAttribute
+getAttribute 72 = getAttributeValue >>= return . ARAPZoneAccessAttribute . fromEnum32
+getAttribute 73 = getAttributeValue >>= return . ARAPSecurityAttribute
+getAttribute 75 = getAttributeValue >>= return . PasswordRetryAttribute
+getAttribute 76 = getAttributeValue >>= return . PromptAttribute
+getAttribute 85 = getAttributeValue >>= return . AcctInterimIntervalAttribute
 getAttribute 97 = do
   attrLen      <- getWord8
   _reserved    <- getWord8
@@ -215,7 +253,7 @@ getAttribute 3 = do
 getAttribute n  = fail $ "Unknown RADIUS attribute type " ++ show n
 
 getAttributeStr :: Get ByteString
-getAttributeStr = getWord8 >>= getLazyByteString . fromIntegral
+getAttributeStr = getWord8 >>= getLazyByteString . fromIntegral . (subtract 2) -- minus type + len
 
 getAttributeValue :: (Binary a) => Get a
 getAttributeValue = getWord8 >> get
@@ -248,8 +286,15 @@ instance Binary NASPortType where
     put = putEnum
     get = getEnum
 
+instance Binary ARAPZoneAccess where
+    put = putEnum
+    get = getEnum
+
 putEnum :: (Enum a) => a -> Put
 putEnum = putWord32be . fromIntegral . fromEnum
 
 getEnum :: (Enum a) => Get a
 getEnum = getWord8 >>= return . toEnum . fromIntegral
+
+fromEnum32 :: (Enum a) => Word32 -> a
+fromEnum32 = toEnum . fromIntegral
