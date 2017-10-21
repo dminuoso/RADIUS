@@ -22,12 +22,12 @@ authenticatorLength :: Int64
 authenticatorLength = 16
 
 instance Binary Packet where
-    put Packet{..}   = do
-      let iD         = fromIntegral getPacketId
+    put Packet{ getHeader = Header{..} , .. } = do
+      let iD         = fromIntegral $ getPacketId
           authLen    = B.length getPacketAuthenticator
           attributes = encodeAttributes getPacketAttributes
           attrsLen   = fromIntegral . B.length $ attributes
-      when (B.length getPacketAuthenticator /= authenticatorLength) $
+      when (authLen /= authenticatorLength) $
            fail $ "RADIUS.Encoding: Invalid Authenticator length " ++ show authLen
       put getPacketType
       putWord8 iD
@@ -35,15 +35,25 @@ instance Binary Packet where
       putLazyByteString getPacketAuthenticator
       putLazyByteString attributes
     get = do
-      packetType     <- get
-      iD             <- getWord8
-      _packetLength  <- getWord16be
-      authenticator  <- getLazyByteString authenticatorLength
-      attributes     <- decodeAttributes []
-      return Packet { getPacketType          = packetType,
-                      getPacketId            = iD,
-                      getPacketAuthenticator = authenticator,
-                      getPacketAttributes    = attributes }
+      header <- decodeHeader
+      decodePacket header
+
+decodeHeader :: Get Header
+decodeHeader = do
+  packetType    <- get
+  iD            <- getWord8
+  packetLength  <- getWord16be
+  authenticator <- getLazyByteString authenticatorLength
+  return Header { getPacketType          = packetType,
+                  getPacketId            = iD,
+                  getPacketLength        = packetLength,
+                  getPacketAuthenticator = authenticator }
+
+decodePacket :: Header -> Get Packet
+decodePacket header@Header{..} = do
+  attributes <- decodeAttributes []
+  return Packet { getHeader           = header,
+                  getPacketAttributes = attributes }
 
 instance Binary PacketType where
     put = putEnum

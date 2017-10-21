@@ -15,14 +15,18 @@ it should be straightforward to look up a particular element and understand what
 -}
 import Data.ByteString.Lazy.Char8    (ByteString)
 import Data.Data                     (Data)
-import Data.Word                     (Word8, Word32, Word64)
+import Data.Word                     (Word8, Word16, Word32, Word64)
 import Data.IP                       (IPv4, IPv6)
 import Data.Int                      (Int8)
 
-data Packet = Packet { getPacketType          :: PacketType,
+data Header = Header { getPacketType          :: PacketType,
                        getPacketId            :: Word8,
-                       getPacketAuthenticator :: ByteString,
-                       getPacketAttributes    :: [PacketAttribute] }
+                       getPacketLength        :: Word16,
+                       getPacketAuthenticator :: ByteString }
+              deriving (Show, Eq)
+
+data Packet = Packet { getHeader           :: Header,
+                       getPacketAttributes :: [PacketAttribute] }
               deriving (Show, Eq)
 
 data PacketType = AccessRequest
