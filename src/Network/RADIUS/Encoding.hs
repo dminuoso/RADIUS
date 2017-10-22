@@ -1,23 +1,40 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-|
+Module      : Network.RADIUS.Encoding
+Description : Provides on the wire de/coding of RADIUS packets as per RFC 3748
+Copyright   : (c) Erick Gonzalez, 2017
+License     : BSD3
+Maintainer  : erick@codemonkeylabs.de
+Stability   : experimental
+Portability : POSIX
+
+This module provides Binary instances for the RADIUS Packet type and attributes. So you basically decode a (lazy) ByteString and get a RADIUS Packet back or you can encode a RADIUS Packet to a ByteString, which you can then send on the wire as is, etc. Simple as that.
+
+-}
+
 module Network.RADIUS.Encoding where
 
 import Control.Monad               (when)
 import Data.Binary                 (Binary(..), encode)
-import Data.Binary.Put             (Put, putLazyByteString, putWord8, putWord16be, putWord32be)
+import Data.Binary.Put             (Put, putLazyByteString, putWord8, putWord16be)
 import Data.Binary.Get             (Get, getLazyByteString, getWord8, getWord16be, isEmpty)
-import Data.ByteString.Lazy.Char8  (ByteString)
+import Data.ByteString.Lazy.Char8  (ByteString, append)
 import Data.IP                     (IPv4, IPv6)
 import Data.Int                    (Int64)
 import Data.Word                   (Word8, Word16, Word32)
 import Network.RADIUS.Types
-import Debug.Trace
 
 import qualified Data.ByteString.Lazy.Char8 as B
+import qualified Crypto.Hash.MD5            as MD5
 
+-- | Self explanatory. It can be useful when reading a RADIUS packet from a socket for example,
+-- so one can retrieve the packet header (containing the packet length) first and then use that
+-- to figure out how much data is left to read
 radiusHeaderSize :: Word16
 radiusHeaderSize = 20
 
+-- | Fixed authenticator length as per RFC 2865
 authenticatorLength :: Int64
 authenticatorLength = 16
 
@@ -38,6 +55,7 @@ instance Binary Packet where
       header <- decodeHeader
       decodePacket header
 
+-- | Allows decoding of a RADIUS header in the Get Monad
 decodeHeader :: Get Header
 decodeHeader = do
   packetType    <- get
@@ -49,19 +67,30 @@ decodeHeader = do
                   getPacketLength        = packetLength,
                   getPacketAuthenticator = authenticator }
 
+-- | Given an already decoded header, this function can be used to decode the complete packet
+-- from the available data
 decodePacket :: Header -> Get Packet
 decodePacket header@Header{..} = do
   attributes <- decodeAttributes []
   return Packet { getHeader           = header,
                   getPacketAttributes = attributes }
 
+sign :: ByteString -> ByteString -> ByteString
+sign packet secret =
+    let authenticator = B.fromStrict . MD5.hashlazy $ packet `append` secret
+        prologue      = B.take 4 packet -- size of type, id, length
+        attributes    = B.drop (fromIntegral radiusHeaderSize) packet
+    in prologue `append` authenticator `append` attributes
+
 instance Binary PacketType where
     put = putEnum
     get = getEnum
 
+-- | Used internally to encode a list of RADIUS attributes. You probably don't need this.
 encodeAttributes :: [PacketAttribute] -> ByteString
 encodeAttributes = B.concat . fmap encode
 
+-- | Used internally to decode a list of RADIUS attributes. You probably don't need this.
 decodeAttributes :: [PacketAttribute] -> Get [PacketAttribute]
 decodeAttributes acc = do
   done <- isEmpty
@@ -161,15 +190,16 @@ instance Binary PacketAttribute where
 
     get = do
       code <- getWord8
-      traceM $ "decode attr " ++ show code
       getAttribute code
 
+-- | For internal use
 putAttributeStr :: Word8 -> ByteString -> Put
 putAttributeStr code str = do
     putWord8 code
     putWord8 $ (fromIntegral . B.length $ str) + 2 -- attr length + code + len octets
     putLazyByteString str
 
+-- | For internal use
 putAttribute :: (Binary a) => Word8 -> a -> Put
 putAttribute code attribute = do
     let attrData = encode attribute
@@ -262,9 +292,11 @@ getAttribute 3 = do
   return $ CHAPPassword identity attrData
 getAttribute n  = fail $ "Unknown RADIUS attribute type " ++ show n
 
+-- | For internal use.
 getAttributeStr :: Get ByteString
 getAttributeStr = getWord8 >>= getLazyByteString . fromIntegral . (subtract 2) -- minus type + len
 
+-- | For internal use.
 getAttributeValue :: (Binary a) => Get a
 getAttributeValue = getWord8 >> get
 
@@ -300,11 +332,14 @@ instance Binary ARAPZoneAccess where
     put = putEnum
     get = getEnum
 
+-- | For internal use.
 putEnum :: (Enum a) => a -> Put
-putEnum = putWord32be . fromIntegral . fromEnum
+putEnum = putWord8 . fromIntegral . fromEnum
 
+-- | For internal use.
 getEnum :: (Enum a) => Get a
 getEnum = getWord8 >>= return . toEnum . fromIntegral
 
+-- | For internal use.
 fromEnum32 :: (Enum a) => Word32 -> a
 fromEnum32 = toEnum . fromIntegral

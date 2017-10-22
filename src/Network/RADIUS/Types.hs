@@ -1,18 +1,22 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-module Network.RADIUS.Types where
-
-{- |
-Module: Nework.RADIUS.Types
-Description: Data types representing RADIUS messages
-Copyright: (c) Erick Gonzalez, 2017
-License: BSD3
-Maintainer: erick@codemonkeylabs.de
+{-|
+Module      : Network.RADIUS.Types
+Description : Provides types and definitions for RADIUS as per RFC 2865
+Copyright   : (c) Erick Gonzalez, 2017
+License     : BSD3
+Maintainer  : erick@codemonkeylabs.de
+Stability   : experimental
+Portability : POSIX
 
 This module compiles the RADIUS packet definitions and different attributes as specified in
 RFC 2865. The naming conventions from the RFC have been preserved as much as possible, so
 it should be straightforward to look up a particular element and understand what it means etc.
 
+RADIUS extensions in RFC 2869 are also supported, as well as RFC 3162 for IPv6 related attributes
+
 -}
+module Network.RADIUS.Types where
+
 import Data.ByteString.Lazy.Char8    (ByteString)
 import Data.Data                     (Data)
 import Data.Word                     (Word8, Word16, Word32, Word64)
