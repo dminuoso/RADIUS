@@ -226,6 +226,7 @@ data NASPortType = AsyncNASPort
                  | SyncNASPort
                  | ISDNSyncPort
                  | ISDNAsyncV120Port
+                 | ISDNAsyncV110Port
                  | VirtualNASPort
                  | PIAFSNASPort
                  | HDLCClearChannelNASPort

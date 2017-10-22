@@ -17,12 +17,12 @@ module Network.RADIUS.Encoding where
 
 import Control.Monad               (when)
 import Data.Binary                 (Binary(..), encode)
-import Data.Binary.Put             (Put, putLazyByteString, putWord8, putWord16be)
-import Data.Binary.Get             (Get, getLazyByteString, getWord8, getWord16be, isEmpty)
+import Data.Binary.Put             (Put, putLazyByteString, putWord8, putWord16be, putWord32be)
+import Data.Binary.Get             (Get, getLazyByteString, getWord8, getWord16be, getWord32be, isEmpty)
 import Data.ByteString.Lazy.Char8  (ByteString, append)
 import Data.IP                     (IPv4, IPv6)
 import Data.Int                    (Int64)
-import Data.Word                   (Word8, Word16, Word32)
+import Data.Word                   (Word8, Word16)
 import Network.RADIUS.Types
 
 import qualified Data.ByteString.Lazy.Char8 as B
@@ -83,8 +83,8 @@ sign packet secret =
     in prologue `append` authenticator `append` attributes
 
 instance Binary PacketType where
-    put = putEnum
-    get = getEnum
+    put = putWord8 . fromIntegral . fromEnum
+    get = getWord8 >>= return . toEnum . fromIntegral
 
 -- | Used internally to encode a list of RADIUS attributes. You probably don't need this.
 encodeAttributes :: [PacketAttribute] -> ByteString
@@ -251,22 +251,22 @@ getAttribute 38 = getAttributeValue >>= return . FramedAppleTalkNetworkAttribute
 getAttribute 62 = getAttributeValue >>= return . PortLimitAttribute
 getAttribute 4  = getAttributeValue >>= return . NASIPAddress
 getAttribute 95 = getAttributeValue >>= return . NASIPv6Address
-getAttribute 6  = getAttributeValue >>= return . ServiceTypeAttribute . fromEnum32
-getAttribute 7  = getAttributeValue >>= return . FramedProtocolAttribute . fromEnum32
+getAttribute 6  = getAttributeValue >>= return . ServiceTypeAttribute
+getAttribute 7  = getAttributeValue >>= return . FramedProtocolAttribute
 getAttribute 8  = getAttributeValue >>= return . FramedIPAddressAttribute
 getAttribute 9  = getAttributeValue >>= return . FramedIPNetmaskAttribute
-getAttribute 10 = getAttributeValue >>= return . FramedRoutingAttribute . fromEnum32
-getAttribute 13 = getAttributeValue >>= return . FramedCompressionAttribute . fromEnum32
+getAttribute 10 = getAttributeValue >>= return . FramedRoutingAttribute
+getAttribute 13 = getAttributeValue >>= return . FramedCompressionAttribute
 getAttribute 96 = getAttributeValue >>= return . FramedInterfaceIdAttribute
 getAttribute 14 = getAttributeValue >>= return . LoginIPHostAttribute
 getAttribute 98 = getAttributeValue >>= return . LoginIPv6HostAttribute
-getAttribute 15 = getAttributeValue >>= return . LoginServiceAttribute . fromEnum32
-getAttribute 29 = getAttributeValue >>= return . TerminationActionAttribute . fromEnum32
-getAttribute 61 = getAttributeValue >>= return . NASPortTypeAttribute . fromEnum32
+getAttribute 15 = getAttributeValue >>= return . LoginServiceAttribute
+getAttribute 29 = getAttributeValue >>= return . TerminationActionAttribute
+getAttribute 61 = getAttributeValue >>= return . NASPortTypeAttribute
 getAttribute 52 = getAttributeValue >>= return . AccountInputGigawordsAttribute
 getAttribute 53 = getAttributeValue >>= return . AccountOutputGigawordsAttribute
 getAttribute 55 = getAttributeValue >>= return . EventTimeStampAttribute
-getAttribute 72 = getAttributeValue >>= return . ARAPZoneAccessAttribute . fromEnum32
+getAttribute 72 = getAttributeValue >>= return . ARAPZoneAccessAttribute
 getAttribute 73 = getAttributeValue >>= return . ARAPSecurityAttribute
 getAttribute 75 = getAttributeValue >>= return . PasswordRetryAttribute
 getAttribute 76 = getAttributeValue >>= return . PromptAttribute
@@ -334,12 +334,8 @@ instance Binary ARAPZoneAccess where
 
 -- | For internal use.
 putEnum :: (Enum a) => a -> Put
-putEnum = putWord8 . fromIntegral . fromEnum
+putEnum = putWord32be . fromIntegral . fromEnum
 
 -- | For internal use.
 getEnum :: (Enum a) => Get a
-getEnum = getWord8 >>= return . toEnum . fromIntegral
-
--- | For internal use.
-fromEnum32 :: (Enum a) => Word32 -> a
-fromEnum32 = toEnum . fromIntegral
+getEnum = getWord32be >>= return . toEnum . fromIntegral
