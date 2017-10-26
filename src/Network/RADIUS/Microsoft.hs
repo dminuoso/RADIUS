@@ -4,7 +4,7 @@ module Network.RADIUS.Microsoft where
 import Prelude hiding (zipWith)
 import Crypto.Hash.Algorithms    (MD5)
 import Crypto.Hash               (Digest, hash)
-import Data.Binary.Put           (Put, putByteString, putWord8, putWord16be, runPut)
+import Data.Binary.Put           (Put, putByteString, putWord8, putWord16be, runPut, putWord32be)
 import Data.Bits                 ((.|.), xor)
 import Data.ByteArray            (convert)
 import Data.ByteString.Builder   (toLazyByteString, byteStringHex)
@@ -12,29 +12,30 @@ import Data.ByteString           (ByteString, pack, zipWith)
 import Data.ByteString.Internal  (c2w, w2c)
 import Data.Char                 (toUpper)
 import Data.Monoid               ((<>))
-import Data.Word                 (Word8, Word16)
+import Data.Word                 (Word8, Word16, Word32)
 import Network.RADIUS.Types
 
 import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.ByteString.Char8      as B
 
-encodeMPPPESendKeyAttribute :: Word16
-                            -> ByteString
-                            -> ByteString
-                            -> ByteString
-                            -> PacketAttribute
-encodeMPPPESendKeyAttribute salt key ntHash authenticator =
-    let str = runPut $ encodeMPPEKeyAttribute 16 salt key ntHash authenticator
-    in VendorSpecificAttribute 26 str
+vendorSpecificAttribute :: LB.ByteString -> PacketAttribute
+vendorSpecificAttribute = VendorSpecificAttribute 26
 
-encodeMPPPERecvKeyAttribute :: Word16
+encodeMPPESendKeyAttribute :: Word16
                             -> ByteString
                             -> ByteString
                             -> ByteString
                             -> PacketAttribute
-encodeMPPPERecvKeyAttribute salt key ntHash authenticator =
-    let str = runPut $ encodeMPPEKeyAttribute 17 salt key ntHash authenticator
-    in VendorSpecificAttribute 26 str
+encodeMPPESendKeyAttribute salt key ntHash authenticator =
+    vendorSpecificAttribute . runPut $ encodeMPPEKeyAttribute 16 salt key ntHash authenticator
+
+encodeMPPERecvKeyAttribute :: Word16
+                            -> ByteString
+                            -> ByteString
+                            -> ByteString
+                            -> PacketAttribute
+encodeMPPERecvKeyAttribute salt key ntHash authenticator =
+    vendorSpecificAttribute . runPut $ encodeMPPEKeyAttribute 17 salt key ntHash authenticator
 
 encodeMPPEKeyAttribute :: Word8
                        -> Word16
@@ -62,3 +63,17 @@ encodeMPPEKeyAttribute vendorType salt key ntHash authenticator = do
                 let (x, xs) = splitAt n str
                 in partition' ((pack . fmap c2w $ x):acc) n xs
             encrypt bytes chunk  = pack $ zipWith xor chunk (md5 $ ntHash <> bytes)
+
+encodeMPPEEncryptionPolicyAttribute :: Word32 -> PacketAttribute
+encodeMPPEEncryptionPolicyAttribute policy =
+    vendorSpecificAttribute . runPut $ do
+      putWord8 7 -- for MS-MPPE-Encryption-Policy.
+      putWord8 6 -- fixed length
+      putWord32be policy
+
+encodeMPPEEncryptionTypesAttribute :: Word32 -> PacketAttribute
+encodeMPPEEncryptionTypesAttribute types =
+    vendorSpecificAttribute . runPut $ do
+      putWord8 8 -- for MS-MPPE-Encryption-Types.
+      putWord8 6 -- fixed length
+      putWord32be types
