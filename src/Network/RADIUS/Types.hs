@@ -95,7 +95,7 @@ data PacketAttribute =
   | FramedIPXNetworkAttribute       { getFramedIPXNetworkAttribute       :: Word32            }
   | StateAttribute                  { getStateAttribute                  :: ByteString        }
   | ClassAttribute                  { getClassAttribute                  :: ByteString        }
-  | VendorSpecificAttribute         { getVendorSpecificAttributeId       :: Word32,
+  | VendorSpecificAttribute         { getVendorIdAttribute               :: Word32,
                                       getVendorSpecificAttribute         :: ByteString        }
   | SessionTimeoutAttribute         { getSessionTimeoutAttribute         :: Word32            }
   | IdleTimeoutAttribute            { getIdleTimeoutAttribute            :: Word32            }

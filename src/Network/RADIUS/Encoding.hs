@@ -184,11 +184,11 @@ instance Binary PacketAttribute where
       putWord8 0  -- reserved
       putWord8 $ fromIntegral prefixLength
       putLazyByteString attr
-    put (VendorSpecificAttribute iD str) = do
+    put (VendorSpecificAttribute vendorId str) = do
       let attrLen = (fromIntegral . B.length $ str) + 6 -- Attribute header length + string
       putWord8 26 -- Attribute Type
       putWord8 attrLen
-      put iD
+      putWord32be vendorId
       putLazyByteString str
     put (CHAPPassword identity str)           = do
       let attrLen = (fromIntegral . B.length $ str) + 3 -- Attribute header plus string

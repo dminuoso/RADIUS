@@ -9,7 +9,7 @@ import Data.Bits                 ((.|.), xor)
 import Data.ByteArray            (convert)
 import Data.ByteString.Builder   (toLazyByteString, byteStringHex)
 import Data.ByteString           (ByteString, pack, zipWith)
-import Data.ByteString.Internal  (c2w, w2c)
+import Data.ByteString.Internal  (c2w)
 import Data.Char                 (toUpper)
 import Data.Monoid               ((<>))
 import Data.Word                 (Word8, Word16, Word32)
@@ -19,7 +19,8 @@ import qualified Data.ByteString.Lazy.Char8 as LB
 import qualified Data.ByteString.Char8      as B
 
 vendorSpecificAttribute :: LB.ByteString -> PacketAttribute
-vendorSpecificAttribute = VendorSpecificAttribute 26
+vendorSpecificAttribute =
+    VendorSpecificAttribute 311 -- Microsoft SMI Network Management Enterprise Code
 
 encodeMPPESendKeyAttribute :: Word16
                             -> ByteString
@@ -46,9 +47,9 @@ encodeMPPEKeyAttribute :: Word8
 encodeMPPEKeyAttribute vendorType salt key ntHash authenticator = do
   putWord8 vendorType
   let salt'     = LB.toStrict . runPut . putWord16be $ salt .|. 0x8000 -- MSB in salt *must* be set
-      keyLength = w2c .fromIntegral $ B.length key
+      keyLength = show $ B.length key
       key'      = fmap toUpper . LB.unpack . toLazyByteString . byteStringHex $ key
-      str       = keyLength : key'
+      str       = keyLength ++ key'
       n         = length str `mod` 16
       m         = if n == 0 then 0 else 16 - n
       str'      = str ++ replicate m '\NUL'
