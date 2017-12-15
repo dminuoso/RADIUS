@@ -1,5 +1,5 @@
 name:                radius
-version:             0.4.0.0
+version:             0.5.0.0
 synopsis:            Remote Authentication Dial In User Service (RADIUS)
 description:         This module provides types and on the wire de/coding of RADIUS packets as per RFC2865
 homepage:            https://github.com/erickg/radius#readme
