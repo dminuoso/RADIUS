@@ -17,7 +17,7 @@ RADIUS extensions in RFC 2869 are also supported, as well as RFC 3162 for IPv6 r
 -}
 module Network.RADIUS.Types where
 
-import Data.ByteString.Lazy.Char8    (ByteString)
+import Data.ByteString.Char8         (ByteString)
 import Data.Data                     (Data)
 import Data.Word                     (Word8, Word16, Word32, Word64)
 import Data.IP                       (IPv4, IPv6)

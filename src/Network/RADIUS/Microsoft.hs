@@ -35,7 +35,7 @@ import qualified Data.ByteString.Char8      as B
 -- | Wraps the given encoded vendor specific attribute data into a PacketAttribute with
 -- Microsoft SMI Network Management Enterprise Code
 vendorSpecificAttribute :: LB.ByteString -> PacketAttribute
-vendorSpecificAttribute = VendorSpecificAttribute 311
+vendorSpecificAttribute = VendorSpecificAttribute 311 . LB.toStrict
 
 -- | Encode the MS-MPPE-Send-Key RADIUS attribute as per [RFC2548]
 encodeMPPESendKeyAttribute :: Word16    -- ^ 16 bit random salt

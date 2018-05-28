@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-|
@@ -17,23 +18,23 @@ module Network.RADIUS.Encoding where
 
 import Control.Monad               (when)
 import Data.Binary                 (Binary(..), encode)
-import Data.Binary.Put             (Put, putLazyByteString, putWord8, putWord16be, putWord32be)
+import Data.Binary.Put             (Put, putByteString, putLazyByteString, putWord8, putWord16be, putWord32be)
 import Data.Binary.Get             (Get,
-                                    getLazyByteString,
+                                    getByteString,
                                     getWord8,
                                     getWord16be,
                                     getWord32be,
                                     isEmpty)
 import Data.ByteArray              (convert)
-import Data.ByteString.Lazy.Char8  (ByteString, append)
+import Data.ByteString.Char8       (ByteString, append)
 import Data.IP                     (IPv4, IPv6)
-import Data.Int                    (Int64)
 import Data.Word                   (Word8, Word16)
 import Crypto.Hash.Algorithms      (MD5)
-import Crypto.Hash                 (Digest, hashlazy)
+import Crypto.Hash                 (hash)
 import Network.RADIUS.Types
 
-import qualified Data.ByteString.Lazy.Char8 as B
+import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Lazy.Char8 as BL
 
 -- | Self explanatory. It can be useful when reading a RADIUS packet from a socket for example,
 -- so one can retrieve the packet header (containing the packet length) first and then use that
@@ -42,7 +43,7 @@ radiusHeaderSize :: Word16
 radiusHeaderSize = 20
 
 -- | Fixed authenticator length as per RFC 2865
-authenticatorLength :: Int64
+authenticatorLength :: Int
 authenticatorLength = 16
 
 instance Binary Packet where
@@ -50,13 +51,13 @@ instance Binary Packet where
       let iD         = fromIntegral $ getPacketId
           authLen    = B.length getPacketAuthenticator
           attributes = encodeAttributes getPacketAttributes
-          attrsLen   = fromIntegral . B.length $ attributes
+          attrsLen   = fromIntegral $ BL.length $ attributes
       when (authLen /= authenticatorLength) $
            fail $ "RADIUS.Encoding: Invalid Authenticator length " ++ show authLen
       put getPacketType
       putWord8 iD
       putWord16be $ attrsLen + radiusHeaderSize
-      putLazyByteString getPacketAuthenticator
+      putByteString getPacketAuthenticator
       putLazyByteString attributes
     get = do
       header <- decodeHeader
@@ -68,7 +69,7 @@ decodeHeader = do
   packetType    <- get
   iD            <- getWord8
   packetLength  <- getWord16be
-  authenticator <- getLazyByteString authenticatorLength
+  authenticator <- getByteString authenticatorLength
   return Header { getPacketType          = packetType,
                   getPacketId            = iD,
                   getPacketLength        = packetLength,
@@ -90,15 +91,15 @@ sign packet secret =
     in prologue `append` authenticator `append` attributes
 
 hashMD5 :: ByteString -> ByteString
-hashMD5 = B.fromStrict . convert . (hashlazy :: ByteString -> Digest MD5)
+hashMD5 = convert . (hash @_ @MD5)
 
 instance Binary PacketType where
     put = putWord8 . fromIntegral . fromEnum
     get = getWord8 >>= return . toEnum . fromIntegral
 
 -- | Used internally to encode a list of RADIUS attributes. You probably don't need this.
-encodeAttributes :: [PacketAttribute] -> ByteString
-encodeAttributes = B.concat . fmap encode
+encodeAttributes :: [PacketAttribute] -> BL.ByteString
+encodeAttributes = BL.concat . fmap encode
 
 -- | Used internally to decode a list of RADIUS attributes. You probably don't need this.
 decodeAttributes :: [PacketAttribute] -> Get [PacketAttribute]
@@ -178,25 +179,25 @@ instance Binary PacketAttribute where
     put (AcctInterimIntervalAttribute value)    = putAttribute     85 value
     put (FramedIPv6Prefix prefixLength prefix) = do
       let attr    = encode prefix
-          attrLen = 4 + (fromIntegral . B.length $ attr)
+          attrLen = 4 + (fromIntegral . BL.length $ attr)
       putWord8 97 -- Attribute type
       putWord8 attrLen
       putWord8 0  -- reserved
       putWord8 $ fromIntegral prefixLength
       putLazyByteString attr
     put (VendorSpecificAttribute vendorId str) = do
-      let attrLen = (fromIntegral . B.length $ str) + 6 -- Attribute header length + string
+      let attrLen = fromIntegral $ (B.length str) + 6 -- Attribute header length + string
       putWord8 26 -- Attribute Type
       putWord8 attrLen
       putWord32be vendorId
-      putLazyByteString str
+      putByteString str
     put (CHAPPassword identity str)           = do
-      let attrLen = (fromIntegral . B.length $ str) + 3 -- Attribute header plus string
+      let attrLen = fromIntegral $ (B.length str) + 3 -- Attribute header plus string
       when (attrLen /= 19) $ fail $ "Invalid RADIUS CHAP Password length " ++ show attrLen
       putWord8 3 -- Attribute Type
       putWord8 attrLen
       putWord8 identity
-      putLazyByteString str
+      putByteString str
 
     get = do
       code <- getWord8
@@ -207,13 +208,13 @@ putAttributeStr :: Word8 -> ByteString -> Put
 putAttributeStr code str = do
     putWord8 code
     putWord8 $ (fromIntegral . B.length $ str) + 2 -- attr length + code + len octets
-    putLazyByteString str
+    putByteString str
 
 -- | For internal use
 putAttribute :: (Binary a) => Word8 -> a -> Put
 putAttribute code attribute = do
     let attrData = encode attribute
-        attrLen  = (fromIntegral . B.length $ attrData) + 2 -- attr length + code + len octets
+        attrLen  = (fromIntegral . BL.length $ attrData) + 2 -- attr length + code + len octets
     putWord8 code
     putWord8 attrLen
     putLazyByteString attrData
@@ -292,19 +293,19 @@ getAttribute 97 = do
 getAttribute 26 = do
   attrLen  <- getWord8
   iD       <- get
-  attrData <- getLazyByteString . fromIntegral $ attrLen - 6
+  attrData <- getByteString . fromIntegral $ attrLen - 6
   return $ VendorSpecificAttribute iD attrData
 getAttribute 3 = do
   attrLen  <- getWord8
   when (attrLen /= 19) $ fail $ "Invalid RADIUS CHAP Password length " ++ show attrLen
   identity <- getWord8
-  attrData <- getLazyByteString 16 -- CHAP response is always 16 octets
+  attrData <- getByteString 16 -- CHAP response is always 16 octets
   return $ CHAPPassword identity attrData
 getAttribute n  = fail $ "Unknown RADIUS attribute type " ++ show n
 
 -- | For internal use.
 getAttributeStr :: Get ByteString
-getAttributeStr = getWord8 >>= getLazyByteString . fromIntegral . (subtract 2) -- minus type + len
+getAttributeStr = getWord8 >>= getByteString . fromIntegral . (subtract 2) -- minus type + len
 
 -- | For internal use.
 getAttributeValue :: (Binary a) => Get a
