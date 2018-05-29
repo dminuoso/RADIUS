@@ -17,6 +17,7 @@ module Network.RADIUS.Encoding where
 
 import           Control.Applicative (many)
 import           Control.Monad (when)
+import           Data.Semigroup ((<>))
 import           Data.Word (Word8, Word16)
 
 import           Data.Binary (Binary(..), encode)
@@ -39,7 +40,7 @@ import           Data.Binary.Get
 import           Crypto.Hash (hashWith)
 import           Crypto.Hash.Algorithms (MD5(MD5))
 import           Data.ByteArray (convert)
-import           Data.ByteString.Char8 (ByteString, append)
+import           Data.ByteString.Char8 (ByteString)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL
 import           Data.IP (IPv4, IPv6)
@@ -95,13 +96,13 @@ decodePacket header@Header{..} = do
 
 sign :: ByteString -> ByteString -> ByteString
 sign packet secret =
-    let authenticator = hashMD5 $ packet `append` secret
+    let authenticator = hashMD5 $ packet <> secret
         prologue      = B.take 4 packet -- size of type, id, length
         attributes    = B.drop (fromIntegral radiusHeaderSize) packet
-    in prologue `append` authenticator `append` attributes
+    in prologue <> authenticator <> attributes
 
 hashMD5 :: ByteString -> ByteString
-hashMD5 = convert . (hashWith MD5)
+hashMD5 = convert . hashWith MD5
 
 instance Binary PacketType where
     put = putWord8 . fromIntegral . fromEnum
