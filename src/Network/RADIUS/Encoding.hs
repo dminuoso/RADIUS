@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-|
@@ -29,8 +28,8 @@ import Data.ByteArray              (convert)
 import Data.ByteString.Char8       (ByteString, append)
 import Data.IP                     (IPv4, IPv6)
 import Data.Word                   (Word8, Word16)
-import Crypto.Hash.Algorithms      (MD5)
-import Crypto.Hash                 (hash)
+import Crypto.Hash.Algorithms      (MD5(MD5))
+import Crypto.Hash                 (hashWith)
 import Network.RADIUS.Types
 
 import qualified Data.ByteString.Char8 as B
@@ -91,7 +90,7 @@ sign packet secret =
     in prologue `append` authenticator `append` attributes
 
 hashMD5 :: ByteString -> ByteString
-hashMD5 = convert . (hash @_ @MD5)
+hashMD5 = convert . (hashWith MD5)
 
 instance Binary PacketType where
     put = putWord8 . fromIntegral . fromEnum
