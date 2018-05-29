@@ -229,69 +229,72 @@ putAttribute code attribute = do
     putWord8 attrLen
     putLazyByteString attrData
 
+(<&>) :: (Functor f) => f a -> (a -> b) -> f b
+(<&>) = flip fmap
+
 getAttribute :: Word8 -> Get PacketAttribute
-getAttribute   1 = getAttributeStr >>= return . UserNameAttribute
-getAttribute   2 = getAttributeStr >>= return . UserPasswordAttribute
-getAttribute  99 = getAttributeStr >>= return . FramedIPv6Route
-getAttribute 100 = getAttributeStr >>= return . FramedIPv6Pool
-getAttribute  11 = getAttributeStr >>= return . FilterIdAttribute
-getAttribute  18 = getAttributeStr >>= return . ReplyMessageAttribute
-getAttribute  19 = getAttributeStr >>= return . CallbackNumberAttribute
-getAttribute  20 = getAttributeStr >>= return . CallbackIdAttribute
-getAttribute  22 = getAttributeStr >>= return . FramedRouteAttribute
-getAttribute  24 = getAttributeStr >>= return . StateAttribute
-getAttribute  25 = getAttributeStr >>= return . ClassAttribute
-getAttribute  30 = getAttributeStr >>= return . CalledStationIdAttribute
-getAttribute  31 = getAttributeStr >>= return . CallingStationIdAttribute
-getAttribute  32 = getAttributeStr >>= return . NASIdentifierAttribute
-getAttribute  33 = getAttributeStr >>= return . ProxyStateAttribute
-getAttribute  34 = getAttributeStr >>= return . LoginLATServiceAttribute
-getAttribute  35 = getAttributeStr >>= return . LoginLATNodeAttribute
-getAttribute  36 = getAttributeStr >>= return . LoginLATGroupAttribute
-getAttribute  39 = getAttributeStr >>= return . FramedAppleTalkZoneAttribute
-getAttribute  60 = getAttributeStr >>= return . CHAPChallengeAttribute
-getAttribute  63 = getAttributeStr >>= return . LoginLATPortAttribute
-getAttribute  70 = getAttributeStr >>= return . ARAPPasswordAttribute
-getAttribute  71 = getAttributeStr >>= return . ARAPFeaturesAttribute
-getAttribute  74 = getAttributeStr >>= return . ARAPSecurityDataAttribute
-getAttribute  77 = getAttributeStr >>= return . ConnectInfoAttribute
-getAttribute  78 = getAttributeStr >>= return . ConfigurationTokenAttribute
-getAttribute  79 = getAttributeStr >>= return . EAPMessageAttribute
-getAttribute  80 = getAttributeStr >>= return . MessageAuthenticatorAttribute
-getAttribute  84 = getAttributeStr >>= return . ARAPChallengeResponseAttribute
-getAttribute  87 = getAttributeStr >>= return . NASPortIdAttribute
-getAttribute  88 = getAttributeStr >>= return . FramedPoolAttribute
-getAttribute 5  = getAttributeValue >>= return . NASPortAttribute
-getAttribute 12 = getAttributeValue >>= return . FramedMTUAttribute
-getAttribute 16 = getAttributeValue >>= return . LoginTCPPortAttribute
-getAttribute 23 = getAttributeValue >>= return . FramedIPXNetworkAttribute
-getAttribute 27 = getAttributeValue >>= return . SessionTimeoutAttribute
-getAttribute 28 = getAttributeValue >>= return . IdleTimeoutAttribute
-getAttribute 37 = getAttributeValue >>= return . FramedAppleTalkLinkAttribute
-getAttribute 38 = getAttributeValue >>= return . FramedAppleTalkNetworkAttribute
-getAttribute 62 = getAttributeValue >>= return . PortLimitAttribute
-getAttribute 4  = getAttributeValue >>= return . NASIPAddress
-getAttribute 95 = getAttributeValue >>= return . NASIPv6Address
-getAttribute 6  = getAttributeValue >>= return . ServiceTypeAttribute
-getAttribute 7  = getAttributeValue >>= return . FramedProtocolAttribute
-getAttribute 8  = getAttributeValue >>= return . FramedIPAddressAttribute
-getAttribute 9  = getAttributeValue >>= return . FramedIPNetmaskAttribute
-getAttribute 10 = getAttributeValue >>= return . FramedRoutingAttribute
-getAttribute 13 = getAttributeValue >>= return . FramedCompressionAttribute
-getAttribute 96 = getAttributeValue >>= return . FramedInterfaceIdAttribute
-getAttribute 14 = getAttributeValue >>= return . LoginIPHostAttribute
-getAttribute 98 = getAttributeValue >>= return . LoginIPv6HostAttribute
-getAttribute 15 = getAttributeValue >>= return . LoginServiceAttribute
-getAttribute 29 = getAttributeValue >>= return . TerminationActionAttribute
-getAttribute 61 = getAttributeValue >>= return . NASPortTypeAttribute
-getAttribute 52 = getAttributeValue >>= return . AccountInputGigawordsAttribute
-getAttribute 53 = getAttributeValue >>= return . AccountOutputGigawordsAttribute
-getAttribute 55 = getAttributeValue >>= return . EventTimeStampAttribute
-getAttribute 72 = getAttributeValue >>= return . ARAPZoneAccessAttribute
-getAttribute 73 = getAttributeValue >>= return . ARAPSecurityAttribute
-getAttribute 75 = getAttributeValue >>= return . PasswordRetryAttribute
-getAttribute 76 = getAttributeValue >>= return . PromptAttribute
-getAttribute 85 = getAttributeValue >>= return . AcctInterimIntervalAttribute
+getAttribute   1 = getAttributeStr <&> UserNameAttribute
+getAttribute   2 = getAttributeStr <&> UserPasswordAttribute
+getAttribute  99 = getAttributeStr <&> FramedIPv6Route
+getAttribute 100 = getAttributeStr <&> FramedIPv6Pool
+getAttribute  11 = getAttributeStr <&> FilterIdAttribute
+getAttribute  18 = getAttributeStr <&> ReplyMessageAttribute
+getAttribute  19 = getAttributeStr <&> CallbackNumberAttribute
+getAttribute  20 = getAttributeStr <&> CallbackIdAttribute
+getAttribute  22 = getAttributeStr <&> FramedRouteAttribute
+getAttribute  24 = getAttributeStr <&> StateAttribute
+getAttribute  25 = getAttributeStr <&> ClassAttribute
+getAttribute  30 = getAttributeStr <&> CalledStationIdAttribute
+getAttribute  31 = getAttributeStr <&> CallingStationIdAttribute
+getAttribute  32 = getAttributeStr <&> NASIdentifierAttribute
+getAttribute  33 = getAttributeStr <&> ProxyStateAttribute
+getAttribute  34 = getAttributeStr <&> LoginLATServiceAttribute
+getAttribute  35 = getAttributeStr <&> LoginLATNodeAttribute
+getAttribute  36 = getAttributeStr <&> LoginLATGroupAttribute
+getAttribute  39 = getAttributeStr <&> FramedAppleTalkZoneAttribute
+getAttribute  60 = getAttributeStr <&> CHAPChallengeAttribute
+getAttribute  63 = getAttributeStr <&> LoginLATPortAttribute
+getAttribute  70 = getAttributeStr <&> ARAPPasswordAttribute
+getAttribute  71 = getAttributeStr <&> ARAPFeaturesAttribute
+getAttribute  74 = getAttributeStr <&> ARAPSecurityDataAttribute
+getAttribute  77 = getAttributeStr <&> ConnectInfoAttribute
+getAttribute  78 = getAttributeStr <&> ConfigurationTokenAttribute
+getAttribute  79 = getAttributeStr <&> EAPMessageAttribute
+getAttribute  80 = getAttributeStr <&> MessageAuthenticatorAttribute
+getAttribute  84 = getAttributeStr <&> ARAPChallengeResponseAttribute
+getAttribute  87 = getAttributeStr <&> NASPortIdAttribute
+getAttribute  88 = getAttributeStr <&> FramedPoolAttribute
+getAttribute 5  = getAttributeValue <&> NASPortAttribute
+getAttribute 12 = getAttributeValue <&> FramedMTUAttribute
+getAttribute 16 = getAttributeValue <&> LoginTCPPortAttribute
+getAttribute 23 = getAttributeValue <&> FramedIPXNetworkAttribute
+getAttribute 27 = getAttributeValue <&> SessionTimeoutAttribute
+getAttribute 28 = getAttributeValue <&> IdleTimeoutAttribute
+getAttribute 37 = getAttributeValue <&> FramedAppleTalkLinkAttribute
+getAttribute 38 = getAttributeValue <&> FramedAppleTalkNetworkAttribute
+getAttribute 62 = getAttributeValue <&> PortLimitAttribute
+getAttribute 4  = getAttributeValue <&> NASIPAddress
+getAttribute 95 = getAttributeValue <&> NASIPv6Address
+getAttribute 6  = getAttributeValue <&> ServiceTypeAttribute
+getAttribute 7  = getAttributeValue <&> FramedProtocolAttribute
+getAttribute 8  = getAttributeValue <&> FramedIPAddressAttribute
+getAttribute 9  = getAttributeValue <&> FramedIPNetmaskAttribute
+getAttribute 10 = getAttributeValue <&> FramedRoutingAttribute
+getAttribute 13 = getAttributeValue <&> FramedCompressionAttribute
+getAttribute 96 = getAttributeValue <&> FramedInterfaceIdAttribute
+getAttribute 14 = getAttributeValue <&> LoginIPHostAttribute
+getAttribute 98 = getAttributeValue <&> LoginIPv6HostAttribute
+getAttribute 15 = getAttributeValue <&> LoginServiceAttribute
+getAttribute 29 = getAttributeValue <&> TerminationActionAttribute
+getAttribute 61 = getAttributeValue <&> NASPortTypeAttribute
+getAttribute 52 = getAttributeValue <&> AccountInputGigawordsAttribute
+getAttribute 53 = getAttributeValue <&> AccountOutputGigawordsAttribute
+getAttribute 55 = getAttributeValue <&> EventTimeStampAttribute
+getAttribute 72 = getAttributeValue <&> ARAPZoneAccessAttribute
+getAttribute 73 = getAttributeValue <&> ARAPSecurityAttribute
+getAttribute 75 = getAttributeValue <&> PasswordRetryAttribute
+getAttribute 76 = getAttributeValue <&> PromptAttribute
+getAttribute 85 = getAttributeValue <&> AcctInterimIntervalAttribute
 getAttribute 97 = do
   attrLen      <- getWord8
   _reserved    <- getWord8
