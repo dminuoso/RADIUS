@@ -15,6 +15,7 @@ This module provides Binary instances for the RADIUS Packet type and attributes.
 
 module Network.RADIUS.Encoding where
 
+import           Control.Applicative (many)
 import           Control.Monad (when)
 import           Data.Word (Word8, Word16)
 
@@ -33,7 +34,6 @@ import           Data.Binary.Get
   , getWord8
   , getWord16be
   , getWord32be
-  , isEmpty
   )
 
 import           Crypto.Hash (hashWith)
@@ -61,7 +61,7 @@ instance Binary Packet where
       let iD         = fromIntegral $ getPacketId
           authLen    = B.length getPacketAuthenticator
           attributes = encodeAttributes getPacketAttributes
-          attrsLen   = fromIntegral $ BL.length $ attributes
+          attrsLen   = fromIntegral . BL.length $ attributes
       when (authLen /= authenticatorLength) $
            fail $ "RADIUS.Encoding: Invalid Authenticator length " ++ show authLen
       put getPacketType
@@ -89,7 +89,7 @@ decodeHeader = do
 -- from the available data
 decodePacket :: Header -> Get Packet
 decodePacket header@Header{..} = do
-  attributes <- decodeAttributes []
+  attributes <- many get
   return Packet { getHeader           = header,
                   getPacketAttributes = attributes }
 
@@ -110,16 +110,6 @@ instance Binary PacketType where
 -- | Used internally to encode a list of RADIUS attributes. You probably don't need this.
 encodeAttributes :: [PacketAttribute] -> BL.ByteString
 encodeAttributes = BL.concat . fmap encode
-
--- | Used internally to decode a list of RADIUS attributes. You probably don't need this.
-decodeAttributes :: [PacketAttribute] -> Get [PacketAttribute]
-decodeAttributes acc = do
-  done <- isEmpty
-  if done
-    then return . reverse $ acc
-    else do
-      attribute <- get
-      decodeAttributes $ attribute : acc
 
 instance Binary IPv4
 instance Binary IPv6
