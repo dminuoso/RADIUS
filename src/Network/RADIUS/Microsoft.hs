@@ -12,25 +12,36 @@ This module provides encoding for some of the Microsoft specific attributes, par
 needed for MSCHAPv2.
 
 -}
-module Network.RADIUS.Microsoft (encodeMPPESendKeyAttribute,
-                                 encodeMPPERecvKeyAttribute,
-                                 encodeMPPEEncryptionPolicyAttribute,
-                                 encodeMPPEEncryptionTypesAttribute) where
+module Network.RADIUS.Microsoft
+  ( encodeMPPESendKeyAttribute
+  , encodeMPPERecvKeyAttribute
+  , encodeMPPEEncryptionPolicyAttribute
+  , encodeMPPEEncryptionTypesAttribute
+  )
+where
 
-import Prelude hiding (zipWith)
-import Crypto.Hash.Algorithms    (MD5)
-import Crypto.Hash               (Digest, hash)
-import Data.Binary.Put           (Put, putByteString, putWord8, putWord16be, runPut, putWord32be)
-import Data.Bits                 ((.|.), xor)
-import Data.ByteArray            (convert)
-import Data.ByteString           (ByteString, pack, zipWith)
-import Data.ByteString.Internal  (w2c)
-import Data.Monoid               ((<>))
-import Data.Word                 (Word8, Word16, Word32)
-import Network.RADIUS.Types
+import           Prelude hiding (zipWith)
+import           Data.Bits ((.|.), xor)
+import           Data.Monoid ((<>))
+import           Data.Word (Word8, Word16, Word32)
 
+import           Crypto.Hash (Digest, hash)
+import           Crypto.Hash.Algorithms (MD5)
+import           Data.Binary.Put
+  ( Put
+  , putByteString
+  , putWord8
+  , putWord16be
+  , runPut
+  , putWord32be
+  )
+import           Data.ByteArray (convert)
+import           Data.ByteString (ByteString, pack, zipWith)
+import qualified Data.ByteString.Char8 as B
+import           Data.ByteString.Internal (w2c)
 import qualified Data.ByteString.Lazy.Char8 as LB
-import qualified Data.ByteString.Char8      as B
+
+import           Network.RADIUS.Types
 
 -- | Wraps the given encoded vendor specific attribute data into a PacketAttribute with
 -- Microsoft SMI Network Management Enterprise Code

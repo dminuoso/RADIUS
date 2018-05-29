@@ -15,25 +15,36 @@ This module provides Binary instances for the RADIUS Packet type and attributes.
 
 module Network.RADIUS.Encoding where
 
-import Control.Monad               (when)
-import Data.Binary                 (Binary(..), encode)
-import Data.Binary.Put             (Put, putByteString, putLazyByteString, putWord8, putWord16be, putWord32be)
-import Data.Binary.Get             (Get,
-                                    getByteString,
-                                    getWord8,
-                                    getWord16be,
-                                    getWord32be,
-                                    isEmpty)
-import Data.ByteArray              (convert)
-import Data.ByteString.Char8       (ByteString, append)
-import Data.IP                     (IPv4, IPv6)
-import Data.Word                   (Word8, Word16)
-import Crypto.Hash.Algorithms      (MD5(MD5))
-import Crypto.Hash                 (hashWith)
-import Network.RADIUS.Types
+import           Control.Monad (when)
+import           Data.Word (Word8, Word16)
 
+import           Data.Binary (Binary(..), encode)
+import           Data.Binary.Put
+  ( Put
+  , putByteString
+  , putLazyByteString
+  , putWord8
+  , putWord16be
+  , putWord32be
+  )
+import           Data.Binary.Get
+  ( Get
+  , getByteString
+  , getWord8
+  , getWord16be
+  , getWord32be
+  , isEmpty
+  )
+
+import           Crypto.Hash (hashWith)
+import           Crypto.Hash.Algorithms (MD5(MD5))
+import           Data.ByteArray (convert)
+import           Data.ByteString.Char8 (ByteString, append)
 import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy.Char8 as BL
+import           Data.IP (IPv4, IPv6)
+
+import           Network.RADIUS.Types
 
 -- | Self explanatory. It can be useful when reading a RADIUS packet from a socket for example,
 -- so one can retrieve the packet header (containing the packet length) first and then use that

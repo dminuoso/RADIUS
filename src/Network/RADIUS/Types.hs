@@ -17,21 +17,27 @@ RADIUS extensions in RFC 2869 are also supported, as well as RFC 3162 for IPv6 r
 -}
 module Network.RADIUS.Types where
 
-import Data.ByteString.Char8         (ByteString)
-import Data.Data                     (Data)
-import Data.Word                     (Word8, Word16, Word32, Word64)
-import Data.IP                       (IPv4, IPv6)
-import Data.Int                      (Int8)
+import Data.Data (Data)
+import Data.Int (Int8)
+import Data.Word
+  ( Word8
+  , Word16
+  , Word32
+  , Word64
+  )
 
-data Header = Header { getPacketType          :: !PacketType,
-                       getPacketId            :: !Word8,
-                       getPacketLength        :: !Word16,
-                       getPacketAuthenticator :: !ByteString }
-              deriving (Show, Eq)
+import Data.ByteString.Char8 (ByteString)
+import Data.IP (IPv4, IPv6)
 
-data Packet = Packet { getHeader           :: !Header,
-                       getPacketAttributes :: ![PacketAttribute] }
-              deriving (Show, Eq)
+data Header = Header { getPacketType          :: !PacketType
+                     , getPacketId            :: !Word8
+                     , getPacketLength        :: !Word16
+                     , getPacketAuthenticator :: !ByteString
+                     } deriving (Show, Eq)
+
+data Packet = Packet { getHeader           :: !Header
+                     , getPacketAttributes :: ![PacketAttribute]
+                     } deriving (Show, Eq)
 
 data PacketType = AccessRequest
                 | AccessAccept
@@ -41,7 +47,7 @@ data PacketType = AccessRequest
                 | AccessChallenge
                 | StatusServer
                 | StatusClient
-                  deriving (Show, Eq)
+                deriving (Show, Eq)
 
 
 instance Enum PacketType where
@@ -66,8 +72,8 @@ instance Enum PacketType where
 data PacketAttribute =
     UserNameAttribute               { getUserNameAttribute               :: !ByteString        }
   | UserPasswordAttribute           { getUserPasswordAttribute           :: !ByteString        }
-  | CHAPPassword                    { getCHAPIdentity                    :: !Word8,
-                                      getCHAPPasswordAttribute           :: !ByteString        }
+  | CHAPPassword                    { getCHAPIdentity                    :: !Word8
+                                    , getCHAPPasswordAttribute           :: !ByteString        }
   | NASIPAddress                    { getNASIPAddress                    :: !IPv4              }
   | NASIPv6Address                  { getNASIPv6Address                  :: !IPv6              }
   | NASPortAttribute                { getNASPortAttribute                :: !Word32            }
@@ -77,8 +83,8 @@ data PacketAttribute =
   | FramedIPNetmaskAttribute        { getFramedIPNetmaskAttribute        :: !IPv4              }
   | FramedRoutingAttribute          { getFramedRoutingAttribute          :: !FramedRouting     }
   | FramedInterfaceIdAttribute      { getFramedInterfaceIdAttribute      :: !Word64            }
-  | FramedIPv6Prefix                { getFramedIPv6PrefixLength          :: !Int8,
-                                      getFramedIPv6Prefix                :: !IPv6              }
+  | FramedIPv6Prefix                { getFramedIPv6PrefixLength          :: !Int8
+                                    , getFramedIPv6Prefix                :: !IPv6              }
   | FramedIPv6Route                 { getFramedIPv6RouteAttribute        :: !ByteString        }
   | FramedIPv6Pool                  { getFramedIPv6PoolAttribute         :: !ByteString        }
   | FilterIdAttribute               { getFilterIdAttribute               :: !ByteString        }
@@ -95,8 +101,8 @@ data PacketAttribute =
   | FramedIPXNetworkAttribute       { getFramedIPXNetworkAttribute       :: !Word32            }
   | StateAttribute                  { getStateAttribute                  :: !ByteString        }
   | ClassAttribute                  { getClassAttribute                  :: !ByteString        }
-  | VendorSpecificAttribute         { getVendorIdAttribute               :: !Word32,
-                                      getVendorSpecificAttribute         :: !ByteString        }
+  | VendorSpecificAttribute         { getVendorIdAttribute               :: !Word32
+                                    , getVendorSpecificAttribute         :: !ByteString        }
   | SessionTimeoutAttribute         { getSessionTimeoutAttribute         :: !Word32            }
   | IdleTimeoutAttribute            { getIdleTimeoutAttribute            :: !Word32            }
   | TerminationActionAttribute      { getTerminationActionAttribute      :: !TerminationAction }
@@ -146,7 +152,7 @@ data ServiceType = LoginService
                  | CallbackNASPrompt
                  | CallCheckService
                  | CallbackAdministrativeService
-                   deriving (Show, Eq, Data)
+                 deriving (Show, Eq, Data)
 
 instance Enum ServiceType where
     fromEnum LoginService                  = 1
@@ -179,7 +185,7 @@ data FramedProtocol = PPPFramedProtocol
                     | GandalfFramedProtocol
                     | XylogicsFramedProtocol
                     | X75FramedProtocol
-                      deriving (Show, Eq, Data)
+                    deriving (Show, Eq, Data)
 
 instance Enum FramedProtocol where
     fromEnum PPPFramedProtocol      = 1
@@ -200,13 +206,13 @@ data FramedRouting = NoneFramedRouting
                    | SendFramedRouting
                    | ListenFramedRouting
                    | SendAndListenFramedRouting
-                     deriving (Show, Eq, Enum, Data)
+                   deriving (Show, Eq, Enum, Data)
 
 data FramedCompression = NoCompression
                        | VJTCPIPHeaderCompression
                        | IPXHeaderCompression
                        | StacLZSCompression
-                         deriving (Show, Eq, Enum, Data)
+                       deriving (Show, Eq, Enum, Data)
 
 data LoginService = TelnetService
                   | RloginService
@@ -217,9 +223,10 @@ data LoginService = TelnetService
                   | X25T3POSService
                   | UnusedService
                   | TCPClearQuietService
-                    deriving (Show, Eq, Enum, Data)
+                  deriving (Show, Eq, Enum, Data)
 
-data TerminationAction = DefaultTerminationAction | RADIUSRequestTerminationAction
+data TerminationAction = DefaultTerminationAction
+                       | RADIUSRequestTerminationAction
                        deriving (Show, Eq, Enum, Data)
 
 data NASPortType = AsyncNASPort
@@ -242,7 +249,7 @@ data NASPortType = AsyncNASPort
                  | CableNASPort
                  | WirelessOtherNASPort
                  | WirelessIEEE80211NASPort
-                   deriving (Show, Eq, Enum, Data)
+                 deriving (Show, Eq, Enum, Data)
 
 data ARAPZoneAccess = DefaultZoneOnlyARAPAccess
                     | UseZoneFilterInclusivelyARAPAccess
