@@ -23,14 +23,14 @@ import Data.Word                     (Word8, Word16, Word32, Word64)
 import Data.IP                       (IPv4, IPv6)
 import Data.Int                      (Int8)
 
-data Header = Header { getPacketType          :: PacketType,
-                       getPacketId            :: Word8,
-                       getPacketLength        :: Word16,
-                       getPacketAuthenticator :: ByteString }
+data Header = Header { getPacketType          :: !PacketType,
+                       getPacketId            :: !Word8,
+                       getPacketLength        :: !Word16,
+                       getPacketAuthenticator :: !ByteString }
               deriving (Show, Eq)
 
-data Packet = Packet { getHeader           :: Header,
-                       getPacketAttributes :: [PacketAttribute] }
+data Packet = Packet { getHeader           :: !Header,
+                       getPacketAttributes :: ![PacketAttribute] }
               deriving (Show, Eq)
 
 data PacketType = AccessRequest
@@ -64,74 +64,74 @@ instance Enum PacketType where
     toEnum x  = error $ "Invalid RADIUS packet type " ++ show x
 
 data PacketAttribute =
-    UserNameAttribute               { getUserNameAttribute               :: ByteString        }
-  | UserPasswordAttribute           { getUserPasswordAttribute           :: ByteString        }
-  | CHAPPassword                    { getCHAPIdentity                    :: Word8,
-                                      getCHAPPasswordAttribute           :: ByteString        }
-  | NASIPAddress                    { getNASIPAddress                    :: IPv4              }
-  | NASIPv6Address                  { getNASIPv6Address                  :: IPv6              }
-  | NASPortAttribute                { getNASPortAttribute                :: Word32            }
-  | ServiceTypeAttribute            { getServiceTypeAttribute            :: ServiceType       }
-  | FramedProtocolAttribute         { getFramedProtocolAttribute         :: FramedProtocol    }
-  | FramedIPAddressAttribute        { getFramedIPAddressAttribute        :: IPv4              }
-  | FramedIPNetmaskAttribute        { getFramedIPNetmaskAttribute        :: IPv4              }
-  | FramedRoutingAttribute          { getFramedRoutingAttribute          :: FramedRouting     }
-  | FramedInterfaceIdAttribute      { getFramedInterfaceIdAttribute      :: Word64            }
-  | FramedIPv6Prefix                { getFramedIPv6PrefixLength          :: Int8,
-                                      getFramedIPv6Prefix                :: IPv6              }
-  | FramedIPv6Route                 { getFramedIPv6RouteAttribute        :: ByteString        }
-  | FramedIPv6Pool                  { getFramedIPv6PoolAttribute         :: ByteString        }
-  | FilterIdAttribute               { getFilterIdAttribute               :: ByteString        }
-  | FramedMTUAttribute              { getFramedMTUAttribute              :: Word32            }
-  | FramedCompressionAttribute      { getFramedCompressionAttribute      :: FramedCompression }
-  | LoginIPHostAttribute            { getLoginIPHostAttribute            :: IPv4              }
-  | LoginIPv6HostAttribute          { getLoginIPv6HostAttribute          :: IPv6              }
-  | LoginServiceAttribute           { getLoginServiceAttribute           :: LoginService      }
-  | LoginTCPPortAttribute           { getLoginTCPPortAttribute           :: Word32            }
-  | ReplyMessageAttribute           { getReplyMessageAttribute           :: ByteString        }
-  | CallbackNumberAttribute         { getCallbackNumberAttribute         :: ByteString        }
-  | CallbackIdAttribute             { getCallbackIdAttribute             :: ByteString        }
-  | FramedRouteAttribute            { getFramedRouteAttribute            :: ByteString        }
-  | FramedIPXNetworkAttribute       { getFramedIPXNetworkAttribute       :: Word32            }
-  | StateAttribute                  { getStateAttribute                  :: ByteString        }
-  | ClassAttribute                  { getClassAttribute                  :: ByteString        }
-  | VendorSpecificAttribute         { getVendorIdAttribute               :: Word32,
-                                      getVendorSpecificAttribute         :: ByteString        }
-  | SessionTimeoutAttribute         { getSessionTimeoutAttribute         :: Word32            }
-  | IdleTimeoutAttribute            { getIdleTimeoutAttribute            :: Word32            }
-  | TerminationActionAttribute      { getTerminationActionAttribute      :: TerminationAction }
-  | CalledStationIdAttribute        { getCalledStationIdAttribute        :: ByteString        }
-  | CallingStationIdAttribute       { getCallingStationIdAttribute       :: ByteString        }
-  | NASIdentifierAttribute          { getNASIdentifierAttribute          :: ByteString        }
-  | ProxyStateAttribute             { getProxyStateAttribute             :: ByteString        }
-  | LoginLATServiceAttribute        { getLoginLATServiceAttribute        :: ByteString        }
-  | LoginLATNodeAttribute           { getLoginLATNodeAttribute           :: ByteString        }
-  | LoginLATGroupAttribute          { getLoginLATGroupAttribute          :: ByteString        }
-  | FramedAppleTalkLinkAttribute    { getFramedAppleTalkLinkAttribute    :: Word32            }
-  | FramedAppleTalkNetworkAttribute { getFramedAppleTalkNetworkAttribute :: Word32            }
-  | FramedAppleTalkZoneAttribute    { getFramedAppleTalkZoneAttribute    :: ByteString        }
-  | CHAPChallengeAttribute          { getCHAPChallengeAttribute          :: ByteString        }
-  | NASPortTypeAttribute            { getNASPortTypeAttribute            :: NASPortType       }
-  | PortLimitAttribute              { getPortLimitAttribute              :: Word32            }
-  | LoginLATPortAttribute           { getLoginLATPortAttribute           :: ByteString        }
-  | AccountInputGigawordsAttribute  { getAccountInputGigawordsAttribute  :: Word32            }
-  | AccountOutputGigawordsAttribute { getAccountOutputGigawordsAttribute :: Word32            }
-  | EventTimeStampAttribute         { getEventTimeStampAttribute         :: Word32            }
-  | ARAPPasswordAttribute           { getARAPPasswordAttribute           :: ByteString        }
-  | ARAPFeaturesAttribute           { getARAPFeaturesAttribute           :: ByteString        }
-  | ARAPZoneAccessAttribute         { getARAPZoneAccessAttribute         :: ARAPZoneAccess    }
-  | ARAPSecurityAttribute           { getARAPSecurityAttribute           :: Word32            }
-  | ARAPSecurityDataAttribute       { getARAPSecurityDataAttribute       :: ByteString        }
-  | PasswordRetryAttribute          { getPasswordRetryAttribute          :: Word32            }
-  | PromptAttribute                 { getPromptAttribute                 :: Word32            }
-  | ConnectInfoAttribute            { getConnectInfoAttribute            :: ByteString        }
-  | ConfigurationTokenAttribute     { getConfigurationTokenAttribute     :: ByteString        }
-  | EAPMessageAttribute             { getEAPMessageAttribute             :: ByteString        }
-  | MessageAuthenticatorAttribute   { getMessageAuthenticatorAttribute   :: ByteString        }
-  | ARAPChallengeResponseAttribute  { getARAPChallengeResponseAttribute  :: ByteString        }
-  | AcctInterimIntervalAttribute    { getAcctInterimIntervalAttribute    :: Word32            }
-  | NASPortIdAttribute              { getNASPortIdAttribute              :: ByteString        }
-  | FramedPoolAttribute             { getFramedPoolAttribute             :: ByteString        }
+    UserNameAttribute               { getUserNameAttribute               :: !ByteString        }
+  | UserPasswordAttribute           { getUserPasswordAttribute           :: !ByteString        }
+  | CHAPPassword                    { getCHAPIdentity                    :: !Word8,
+                                      getCHAPPasswordAttribute           :: !ByteString        }
+  | NASIPAddress                    { getNASIPAddress                    :: !IPv4              }
+  | NASIPv6Address                  { getNASIPv6Address                  :: !IPv6              }
+  | NASPortAttribute                { getNASPortAttribute                :: !Word32            }
+  | ServiceTypeAttribute            { getServiceTypeAttribute            :: !ServiceType       }
+  | FramedProtocolAttribute         { getFramedProtocolAttribute         :: !FramedProtocol    }
+  | FramedIPAddressAttribute        { getFramedIPAddressAttribute        :: !IPv4              }
+  | FramedIPNetmaskAttribute        { getFramedIPNetmaskAttribute        :: !IPv4              }
+  | FramedRoutingAttribute          { getFramedRoutingAttribute          :: !FramedRouting     }
+  | FramedInterfaceIdAttribute      { getFramedInterfaceIdAttribute      :: !Word64            }
+  | FramedIPv6Prefix                { getFramedIPv6PrefixLength          :: !Int8,
+                                      getFramedIPv6Prefix                :: !IPv6              }
+  | FramedIPv6Route                 { getFramedIPv6RouteAttribute        :: !ByteString        }
+  | FramedIPv6Pool                  { getFramedIPv6PoolAttribute         :: !ByteString        }
+  | FilterIdAttribute               { getFilterIdAttribute               :: !ByteString        }
+  | FramedMTUAttribute              { getFramedMTUAttribute              :: !Word32            }
+  | FramedCompressionAttribute      { getFramedCompressionAttribute      :: !FramedCompression }
+  | LoginIPHostAttribute            { getLoginIPHostAttribute            :: !IPv4              }
+  | LoginIPv6HostAttribute          { getLoginIPv6HostAttribute          :: !IPv6              }
+  | LoginServiceAttribute           { getLoginServiceAttribute           :: !LoginService      }
+  | LoginTCPPortAttribute           { getLoginTCPPortAttribute           :: !Word32            }
+  | ReplyMessageAttribute           { getReplyMessageAttribute           :: !ByteString        }
+  | CallbackNumberAttribute         { getCallbackNumberAttribute         :: !ByteString        }
+  | CallbackIdAttribute             { getCallbackIdAttribute             :: !ByteString        }
+  | FramedRouteAttribute            { getFramedRouteAttribute            :: !ByteString        }
+  | FramedIPXNetworkAttribute       { getFramedIPXNetworkAttribute       :: !Word32            }
+  | StateAttribute                  { getStateAttribute                  :: !ByteString        }
+  | ClassAttribute                  { getClassAttribute                  :: !ByteString        }
+  | VendorSpecificAttribute         { getVendorIdAttribute               :: !Word32,
+                                      getVendorSpecificAttribute         :: !ByteString        }
+  | SessionTimeoutAttribute         { getSessionTimeoutAttribute         :: !Word32            }
+  | IdleTimeoutAttribute            { getIdleTimeoutAttribute            :: !Word32            }
+  | TerminationActionAttribute      { getTerminationActionAttribute      :: !TerminationAction }
+  | CalledStationIdAttribute        { getCalledStationIdAttribute        :: !ByteString        }
+  | CallingStationIdAttribute       { getCallingStationIdAttribute       :: !ByteString        }
+  | NASIdentifierAttribute          { getNASIdentifierAttribute          :: !ByteString        }
+  | ProxyStateAttribute             { getProxyStateAttribute             :: !ByteString        }
+  | LoginLATServiceAttribute        { getLoginLATServiceAttribute        :: !ByteString        }
+  | LoginLATNodeAttribute           { getLoginLATNodeAttribute           :: !ByteString        }
+  | LoginLATGroupAttribute          { getLoginLATGroupAttribute          :: !ByteString        }
+  | FramedAppleTalkLinkAttribute    { getFramedAppleTalkLinkAttribute    :: !Word32            }
+  | FramedAppleTalkNetworkAttribute { getFramedAppleTalkNetworkAttribute :: !Word32            }
+  | FramedAppleTalkZoneAttribute    { getFramedAppleTalkZoneAttribute    :: !ByteString        }
+  | CHAPChallengeAttribute          { getCHAPChallengeAttribute          :: !ByteString        }
+  | NASPortTypeAttribute            { getNASPortTypeAttribute            :: !NASPortType       }
+  | PortLimitAttribute              { getPortLimitAttribute              :: !Word32            }
+  | LoginLATPortAttribute           { getLoginLATPortAttribute           :: !ByteString        }
+  | AccountInputGigawordsAttribute  { getAccountInputGigawordsAttribute  :: !Word32            }
+  | AccountOutputGigawordsAttribute { getAccountOutputGigawordsAttribute :: !Word32            }
+  | EventTimeStampAttribute         { getEventTimeStampAttribute         :: !Word32            }
+  | ARAPPasswordAttribute           { getARAPPasswordAttribute           :: !ByteString        }
+  | ARAPFeaturesAttribute           { getARAPFeaturesAttribute           :: !ByteString        }
+  | ARAPZoneAccessAttribute         { getARAPZoneAccessAttribute         :: !ARAPZoneAccess    }
+  | ARAPSecurityAttribute           { getARAPSecurityAttribute           :: !Word32            }
+  | ARAPSecurityDataAttribute       { getARAPSecurityDataAttribute       :: !ByteString        }
+  | PasswordRetryAttribute          { getPasswordRetryAttribute          :: !Word32            }
+  | PromptAttribute                 { getPromptAttribute                 :: !Word32            }
+  | ConnectInfoAttribute            { getConnectInfoAttribute            :: !ByteString        }
+  | ConfigurationTokenAttribute     { getConfigurationTokenAttribute     :: !ByteString        }
+  | EAPMessageAttribute             { getEAPMessageAttribute             :: !ByteString        }
+  | MessageAuthenticatorAttribute   { getMessageAuthenticatorAttribute   :: !ByteString        }
+  | ARAPChallengeResponseAttribute  { getARAPChallengeResponseAttribute  :: !ByteString        }
+  | AcctInterimIntervalAttribute    { getAcctInterimIntervalAttribute    :: !Word32            }
+  | NASPortIdAttribute              { getNASPortIdAttribute              :: !ByteString        }
+  | FramedPoolAttribute             { getFramedPoolAttribute             :: !ByteString        }
   deriving (Show, Eq, Data)
 
 
