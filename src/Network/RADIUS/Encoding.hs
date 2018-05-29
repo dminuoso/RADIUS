@@ -60,11 +60,8 @@ authenticatorLength = 16
 instance Binary Packet where
     put Packet{ getHeader = Header{..} , .. } = do
       let iD         = fromIntegral $ getPacketId
-          authLen    = B.length getPacketAuthenticator
           attributes = encodeAttributes getPacketAttributes
           attrsLen   = fromIntegral . BL.length $ attributes
-      when (authLen /= authenticatorLength) $
-           fail $ "RADIUS.Encoding: Invalid Authenticator length " ++ show authLen
       put getPacketType
       putWord8 iD
       putWord16be $ attrsLen + radiusHeaderSize
@@ -96,7 +93,7 @@ decodePacket header@Header{..} = do
 
 sign :: ByteString -> ByteString -> ByteString
 sign packet secret =
-    let authenticator = hashMD5 $ packet <> secret
+    let authenticator = hashMD5 (packet <> secret)
         prologue      = B.take 4 packet -- size of type, id, length
         attributes    = B.drop (fromIntegral radiusHeaderSize) packet
     in prologue <> authenticator <> attributes
@@ -194,7 +191,6 @@ instance Binary PacketAttribute where
       putByteString str
     put (CHAPPassword identity str)           = do
       let attrLen = fromIntegral $ (B.length str) + 3 -- Attribute header plus string
-      when (attrLen /= 19) $ fail $ "Invalid RADIUS CHAP Password length " ++ show attrLen
       putWord8 3 -- Attribute Type
       putWord8 attrLen
       putWord8 identity
